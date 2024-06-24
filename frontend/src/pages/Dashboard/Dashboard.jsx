@@ -1,6 +1,7 @@
 import PopupModal from "../../UI/PopupModal";
 import folderIcorn from "../../resources/folder.png";
 import fileIcon from "../../resources/file.png";
+import { FaTrash } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import TopButton from "./TopButton";
@@ -20,6 +21,7 @@ function Dashboard(props) {
   const [errorMessage, setErrorMessage] = useState("Something went wrong");
   const [isLoderOn, setLoaderOn] = useState(true);
   useEffect(() => {
+    setLoaderOn(true);
     setFolderStructure(rootfolder);
     setLoaderOn(false);
   }, []);
@@ -95,7 +97,39 @@ function Dashboard(props) {
     }
   };
   const handleFileDownload = (id) => {};
-  const handleFileDelete = (id) => {};
+  const handleFileDelete = async (id) => {
+    try {
+      const response = await api.deleteFile(id);
+      if (response.status === 200) {
+        viewFolderData(folderPath);
+      } else {
+        setErrorMessage(response.data.message);
+        openModal();
+      }
+    } catch (error) {
+      if (error.response !== undefined)
+        setErrorMessage(error.response.data.message);
+      else setErrorMessage("Something went wrong");
+      openModal();
+    }
+  };
+
+  const handleFolderDelete = async (id) => {
+    try {
+      const response = await api.deleteFolder(id);
+      if (response.status === 200) {
+        viewFolderData(folderPath);
+      } else {
+        setErrorMessage(response.data.message);
+        openModal();
+      }
+    } catch (error) {
+      if (error.response !== undefined)
+        setErrorMessage(error.response.data.message);
+      else setErrorMessage("Something went wrong");
+      openModal();
+    }
+  };
   if (isLoderOn)
     return (
       <>
@@ -127,8 +161,8 @@ function Dashboard(props) {
             {folderStructure.folders.map((folder) => (
               <div
                 key={folder._id}
-                className="p-4 border border-gray-200 rounded shadow hover:bg-gray-50 cursor-pointer"
-                onClick={() => viewFolderData(folder.filePath)}
+                className="relative group p-4 border border-gray-200 rounded shadow hover:bg-gray-50 cursor-pointer"
+                onDoubleClick={() => viewFolderData(folder.filePath)}
               >
                 <img
                   src={folderIcorn}
@@ -136,6 +170,14 @@ function Dashboard(props) {
                   className="w-12 h-12 mx-auto"
                 />
                 <p className="text-center mt-2 truncate">{folder.name}</p>
+                <div className="absolute bottom-0 right-2 inset-x-0 flex  bg-black bg-opacity-0 opacity-0 group-hover:opacity-100 transition-opacity p-2">
+                  <button
+                    onClick={() => handleFolderDelete(folder._id)}
+                    className="mx-2 p-2 text-white bg-red-600 rounded-full hover:bg-red-700 focus:outline-none"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
               </div>
             ))}
             <FileList

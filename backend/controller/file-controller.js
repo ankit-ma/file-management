@@ -69,15 +69,36 @@ const uploadFile = async (req, res, next) => {
 const deleteFile = async (req, res, next) => {
   try {
     const { fileId } = req.body;
-    const deletedFile = File.deleteOne({ _id: fileId });
-    if (!deleteFile) {
-      return res.status(400).json({ message: "File does not exists" });
+    const userId = req.query.userId || req.params.userId || req.body.userId;
+    const file = await File.findOne({ _id: fileId, user: userId });
+
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
     }
-    return res.status(200).json({ message: "Succesfully deleted" });
+
+    const filePath = path.join(__dirname, "../uploads", file.filePath);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    await File.deleteOne({ _id: fileId, user: userId });
+
+    const parentFolderPath = path.dirname(file.filePath);
+    const parentFolder = await Folder.findOne({
+      filePath: parentFolderPath,
+      user: userId,
+    });
+    if (parentFolder) {
+      parentFolder.files.pull(file._id);
+      await parentFolder.save();
+    }
+
+    res.status(200).json({ message: "File deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 module.exports = {
   uploadFile,
   deleteFile,

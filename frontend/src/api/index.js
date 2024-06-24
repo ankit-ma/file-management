@@ -100,3 +100,20 @@ export const uploadFile = (file, payload) => {
     },
   });
 };
+
+export const deleteFile = async (fileId) => {
+  try {
+    const response = await api.delete("/file/delete", { data: { fileId } });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+export const deleteFolder = async (folderId) => {
+  try {
+    const response = await api.delete("/folder/delete", { data: { folderId } });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

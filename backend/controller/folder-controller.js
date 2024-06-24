@@ -97,7 +97,69 @@ const createFolder = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const deleteFolderContents = async (folder) => {
+  // Delete all files in the folder
+  for (const fileId of folder.files) {
+    const file = await File.findById(fileId);
+    if (file) {
+      const filePath = path.join(__dirname, "..", file.filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      await File.deleteOne({ _id: fileId });
+    }
+  }
+
+  // Recursively delete all subfolders
+  for (const childFolderId of folder.children) {
+    const childFolder = await Folder.findById(childFolderId);
+    if (childFolder) {
+      await deleteFolderContents(childFolder);
+      await Folder.deleteOne({ _id: childFolderId });
+    }
+  }
+};
+
+const deleteFolder = async (req, res) => {
+  const folderId = req.body.folderId; // Ensure this line gets the folderId from query parameters
+  const userId = req.query.userId || req.params.userId || req.body.userId;
+
+  if (!folderId) {
+    return res.status(400).json({ message: "folderId is required" });
+  }
+
+  try {
+    const folder = await Folder.findOne({ _id: folderId, user: userId });
+
+    if (!folder) {
+      return res.status(404).json({ message: "Folder not found" });
+    }
+
+    // Recursively delete all contents
+    await deleteFolderContents(folder);
+
+    // Delete the folder itself
+    await Folder.deleteOne({ _id: folder._id });
+
+    // Remove folder reference from parent folder
+    const parentFolder = await Folder.findOne({
+      children: folder._id,
+      user: userId,
+    });
+    if (parentFolder) {
+      parentFolder.children.pull(folder._id);
+      await parentFolder.save();
+    }
+
+    res
+      .status(200)
+      .json({ message: "Folder and all its contents deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 exports.getRootDirectory = getRootDirectory;
 exports.createFolder = createFolder;
 exports.getFolderDirectory = getFolderDirectory;
+exports.deleteFolder = deleteFolder;
