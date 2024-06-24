@@ -48,7 +48,7 @@ function Login(props) {
         if (response.status === 200) {
           // redirect to dashboard
 
-          dispatch(login(response.data.name));
+          dispatch(login(response.data));
           const folderResponse = await api.fetchRootDirectory();
           console.log("Response Data:", folderResponse.data);
           if (folderResponse.status === 200) {

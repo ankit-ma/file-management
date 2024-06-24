@@ -143,7 +143,22 @@ function Dashboard(props) {
         <div className="w-1/6 bg-gray-100 p-4">
           <div className="mb-4">
             <h2 className="text-xl font-bold">User Info</h2>
-            <p>Name: {session.username}</p>
+            <p>
+              <strong>Name: </strong>
+              {session.username}
+            </p>
+            <p>
+              <strong>No. of Folder: </strong>
+              {session.folderCount}
+            </p>
+            <p>
+              <strong>No. of files: </strong>
+              {session.fileCount}
+            </p>
+            <p>
+              <strong>Total size: </strong>
+              {session.totalSize}
+            </p>
           </div>
         </div>
 

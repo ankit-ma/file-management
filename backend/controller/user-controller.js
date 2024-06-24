@@ -1,22 +1,22 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose"); 
+const mongoose = require("mongoose");
 
 const User = require("../model/user");
-const Folder = require("../model/Folder")
+const Folder = require("../model/Folder");
+const File = require("../model/File");
 // const auth = require("../middleware/auth");
 const HttpError = require("../model/Http-error");
 const mathutil = require("../util/mathutil");
 
-
 const registerUser = async (req, res, next) => {
-   const session = await mongoose.startSession();
-   session.startTransaction();
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     // Get user input
     const { first_name, last_name, email, password } = req.body;
-    const options = {session};
+    const options = { session };
     // Validate user input
     if (!(email && password && first_name && last_name)) {
       res.status(400).send("All input is required");
@@ -24,7 +24,9 @@ const registerUser = async (req, res, next) => {
     const oldUser = await User.findOne({ email });
 
     if (oldUser) {
-      return res.status(409).send({message:"User Already Exist. Please Login"});
+      return res
+        .status(409)
+        .send({ message: "User Already Exist. Please Login" });
       //   next();
     }
 
@@ -37,7 +39,7 @@ const registerUser = async (req, res, next) => {
       last_name,
       email: email.toLowerCase(), // sanitize: convert email to lowercase
       password: encryptedPassword,
-      options
+      options,
     });
 
     // Create token
@@ -52,21 +54,28 @@ const registerUser = async (req, res, next) => {
     user.token = token;
 
     // create root folder for this user
-   
-    rootFolder = new Folder({ name: 'Root', filePath: 'root', children: [], files: [], user:user._id,options});
+
+    rootFolder = new Folder({
+      name: "Root",
+      filePath: "root",
+      children: [],
+      files: [],
+      user: user._id,
+      options,
+    });
     await rootFolder.save();
-    console.log('Root folder created');
+    console.log("Root folder created");
     // return new user
     const response = {
       email: user.email,
       name: user.first_name + " " + user.last_name,
       token: user.token,
-      id:user._id,
+      id: user._id,
       message: "User Registerd Succesfully",
     };
-    
-   await session.commitTransaction();
-   session.endSession();
+
+    await session.commitTransaction();
+    session.endSession();
     res.status(201).json(response);
   } catch (err) {
     console.log(err);
@@ -101,12 +110,24 @@ const loginUser = async (req, res, next) => {
       // save user token
       user.token = token;
 
+      // Calculate user metadata
+      const folderCount = await Folder.countDocuments({ user: user._id });
+      const fileCount = await File.countDocuments({ user: user._id });
+      const totalFileSize = await File.aggregate([
+        { $match: { user: user._id } },
+        { $group: { _id: null, totalSize: { $sum: "$size" } } },
+      ]);
+      const totalSize = totalFileSize[0] ? totalFileSize[0].totalSize : 0;
+      const totalSizeInMB = totalSize / (1024 * 1024);
       // user
       res.status(200).json({
         email: user.email,
         name: user.first_name + " " + user.last_name,
         token: user.token,
         id: user._id,
+        folderCount,
+        fileCount,
+        totalSize: totalSizeInMB.toFixed(2) + " MB",
         message: "Logged in succesfull",
       });
     } else res.status(400).send("Invalid Credentials");

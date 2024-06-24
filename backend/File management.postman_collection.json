@@ -1,0 +1,224 @@
+{
+	"info": {
+		"_postman_id": "8eb6366b-52c1-4a1f-8f9c-759de5b732e6",
+		"name": "File management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "36352081"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"first_name\":\"Ankit\",\r\n    \"last_name\":\"Sharma\",\r\n    \"email\":\"ankitsharmauitbu@gmail.com\",\r\n    \"password\":\"Test@123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5000/user/register"
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "create Folder",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"http://localhost:5000/user/login\",function(err,response){\r",
+							"    if(err){\r",
+							"        console.log(err);\r",
+							"    }\r",
+							"    else{\r",
+							"        let jsonResponse = response.json();\r",
+							"        pm.environment.set(\"token\", jsonResponse.token);\r",
+							"        pm.environment.set(\"userId\", jsonResponse.id);\r",
+							"        \r",
+							"    }\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"Test\",\r\n    \"parentPath\":\"root\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/folder/create?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZjA4MjcyZGVjODUxNmFhYTc1ZWUzIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QHRlc3QuY29tIiwiaWF0IjoxNzE4NTUyNjE1LCJleHAiOjE3MTg1NTk4MTV9.vLCTBWMn0ovgNSmkmslLJ_KgetX4xz57J--ndzH_FaE",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"folder",
+						"create"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZjA4MjcyZGVjODUxNmFhYTc1ZWUzIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QHRlc3QuY29tIiwiaWF0IjoxNzE4NTUyNjE1LCJleHAiOjE3MTg1NTk4MTV9.vLCTBWMn0ovgNSmkmslLJ_KgetX4xz57J--ndzH_FaE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get root folders",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get folderfiles",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"filePath\":\"root/First\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/folder/contents?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZmFiNjNmYzVlYzM3YjAxMWE3YjUyIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QGdtYWlsLmNvbSIsImlhdCI6MTcxODg1NTc0MSwiZXhwIjoxNzE4ODYyOTQxfQ.rBFY0Oc1iB7WGPpi46mJ9Xkig5vyk2sZvgsvMmsQ5ug&userId=666fab63fc5ec37b011a7b52",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"folder",
+						"contents"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZmFiNjNmYzVlYzM3YjAxMWE3YjUyIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QGdtYWlsLmNvbSIsImlhdCI6MTcxODg1NTc0MSwiZXhwIjoxNzE4ODYyOTQxfQ.rBFY0Oc1iB7WGPpi46mJ9Xkig5vyk2sZvgsvMmsQ5ug"
+						},
+						{
+							"key": "userId",
+							"value": "666fab63fc5ec37b011a7b52"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete file",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"fileId\":\"667451b741f83d2c217ea65a\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/file/delete?token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"file",
+						"delete"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": null
+						},
+						{
+							"key": "id",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete folder",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"folderPath\":\"root/ankit pdf\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/folder/delete?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZmFiNjNmYzVlYzM3YjAxMWE3YjUyIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QGdtYWlsLmNvbSIsImlhdCI6MTcxOTE5NTg5MywiZXhwIjoxNzE5MjAzMDkzfQ.FdLHPTwa7h2r9MHuqm-cXMZ6XN771YYSnSyek9Th2hI",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"folder",
+						"delete"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjY2ZmFiNjNmYzVlYzM3YjAxMWE3YjUyIiwiZW1haWwiOiJhbmtpdHNoYXJtYXVpdGJ1QGdtYWlsLmNvbSIsImlhdCI6MTcxOTE5NTg5MywiZXhwIjoxNzE5MjAzMDkzfQ.FdLHPTwa7h2r9MHuqm-cXMZ6XN771YYSnSyek9Th2hI"
+						},
+						{
+							"key": "id",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
